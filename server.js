@@ -30,15 +30,33 @@ app.post("/api/notes", (req, res) => {
   newNote.id = uuidv4();
   fs.readFile(stored, (err, data) => {
     if (err) throw err;
-    let notes = JSON.parse(data);
+    var notes = JSON.parse(data);
     notes.push(newNote);
     fs.writeFile(stored, JSON.stringify(notes), (err) => {
       if (err) throw err;
       console.log("Note Added!");
     });
-    res.end();
+    res.json(JSON.parse(data));
   });
 });
+// Delete request that removes the note from json obj
+app.delete("/api/notes/:id", (req, res) => {
+  fs.readFile(stored, (err, data) => {
+    if (err) throw err;
+    notes = JSON.parse(data);
+    for (i = 0; i < notes.length; i++) {
+      if (notes[i].id === req.params.id) {
+        notes.splice(i, 1);
+      }
+    }
+    fs.writeFile(stored, JSON.stringify(notes), (err) => {
+      if (err) throw err;
+      console.log("Note Removed!");
+    });
+  });
+  res.end();
+});
+
 // .get with callback functions to send the correct files when a path is selected.
 app.get("/notes", (req, res) =>
   res.sendFile(path.join(__dirname, "public/notes.html"))
@@ -46,7 +64,7 @@ app.get("/notes", (req, res) =>
 app.get("*", (req, res) =>
   res.sendFile(path.join(__dirname, "public/index.html"))
 );
-
+// Starts the server listening on the port
 app.listen(PORT, () => {
   console.log(`Listening on Port: ${PORT}`);
 });
